@@ -11,12 +11,23 @@ const App = () => {
     'Programming without an extremely heavy use of console.log is same as if a doctor would refuse to use x-rays or blood tests when diagnosing patients.',
     'The only way to go fast, is to go well.'
   ]
+
+  const getRandomNumber = (upperLimit) => {
+    return Math.floor(Math.random() * upperLimit);
+  };
    
-  const [selected, setSelected] = useState(0)
+  const [selected, setSelected] = useState(getRandomNumber(anecdotes.length));
+
+  const handleClick = () => {
+    let newSelected = getRandomNumber(anecdotes.length);
+    while (newSelected === selected) newSelected = getRandomNumber(anecdotes.length);
+    setSelected(() => newSelected);
+  };
 
   return (
     <div>
-      {anecdotes[selected]}
+      <p>{anecdotes[selected]}</p>
+      <button onClick={handleClick}>Next anecdote</button>
     </div>
   )
 }
