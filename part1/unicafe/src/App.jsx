@@ -19,30 +19,48 @@ const FeedbackInput = ({ setGood, setNeutral, setBad }) => {
     <div>
       <h2>Give feedback</h2>
       <div>
-        <button onClick={() => setGood((good) => good + 1)}>Good</button>
-        <button onClick={() => setNeutral((neutral) => neutral + 1)}>Neutral</button>
-        <button onClick={() => setBad((bad) => bad + 1)}>Bad</button>
+        <Button text="Good" setter={setGood} />
+        <Button text="Neutral" setter={setNeutral} />
+        <Button text="Bad" setter={setBad} />
       </div>
     </div>
   );
 };
 
+const Button = ({ text, setter }) => {
+  return (
+    <button onClick={() => setter((count) => count + 1)}>{text}</button>
+  );
+};
+
 const Statistics = ({ good, neutral, bad }) => {
   const all = good + neutral + bad;
-  
-  if (all === 0) return <p>No feedback given.</p>;
+  if (all === 0) {
+    return <p>No feedback given.</p>;
+  }
 
   const avg = (good * 1 + bad * -1) / all;
   const positive = (good * 100) / all;
   return (
-    <ul>
-      <li>Good: {good}</li>
-      <li>Neutral: {neutral}</li>
-      <li>Bad: {bad}</li>
-      <li>All: {all}</li>
-      <li>Average: {Number.isNaN(avg) ? 0 : avg}</li>
-      <li>Positive: {Number.isNaN(positive) ? 0 : positive}%</li>
-    </ul>
+    <table>
+      <tbody>
+        <StatisticLine text="Good" value={good} />
+        <StatisticLine text="Neutral" value={neutral} />
+        <StatisticLine text="Bad" value={bad} />
+        <StatisticLine text="All" value={all} />
+        <StatisticLine text="Average" value={Number.isNaN(avg) ? 0 : avg.toFixed(2)} />
+        <StatisticLine text="Positive" value={Number.isNaN(positive) ? 0 : positive.toFixed(2)} />
+      </tbody>
+    </table>
+  );
+};
+
+const StatisticLine = ({ text, value }) => {
+  return (
+    <tr>
+      <td>{text}</td>
+      <td>{value}{text === "Positive" && " %"}</td>
+    </tr>
   );
 };
 
