@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 const App = () => {
   const anecdotes = [
@@ -24,6 +24,10 @@ const App = () => {
   
   const [selected, setSelected] = useState(getRandomNumber(anecdotes.length));
   const [votes, setVotes] = useState(generateVotesObject());
+  const mostVoted = useMemo(() => {
+    const votesKeys = Object.keys(votes);
+    return votesKeys.reduce((mostVoted, current) => votes[current] > votes[mostVoted] ? current : mostVoted);
+  }, [votes]);
 
   const handleNextClick = () => {
     let newSelected = getRandomNumber(anecdotes.length);
@@ -38,12 +42,28 @@ const App = () => {
 
   return (
     <div>
-      <p>{anecdotes[selected]}</p>
-      <p>Has {votes[selected]} votes</p>
-      <button onClick={handleVoteClick}>Vote</button>
-      <button onClick={handleNextClick}>Next anecdote</button>
+      <div>
+        <h2>Anecdote of the day</h2>
+        <p>{anecdotes[selected]}</p>
+        <p>Has {votes[selected]} votes</p>
+        <button onClick={handleVoteClick}>Vote</button>
+        <button onClick={handleNextClick}>Next anecdote</button>
+      </div>
+      <div>
+        <h2>Anecdote with most votes</h2>
+        { votes[mostVoted] === 0 ?
+          <>
+            <p>There are no votes yet</p>
+          </> 
+          : 
+          <>
+            <p>{anecdotes[mostVoted]}</p>
+            <p>Has {votes[mostVoted]} votes</p>
+          </>
+        }
+      </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
