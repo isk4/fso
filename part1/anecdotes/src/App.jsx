@@ -10,24 +10,38 @@ const App = () => {
     'Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.',
     'Programming without an extremely heavy use of console.log is same as if a doctor would refuse to use x-rays or blood tests when diagnosing patients.',
     'The only way to go fast, is to go well.'
-  ]
+  ];
 
   const getRandomNumber = (upperLimit) => {
     return Math.floor(Math.random() * upperLimit);
   };
-   
+  const generateVotesObject = () => {
+    const obj = {};
+    for (const i of anecdotes.keys()) obj[i] = 0;
+    // { "0": 0, "1": 0, "2": 0, "3": 0, ... }
+    return obj;
+  };
+  
   const [selected, setSelected] = useState(getRandomNumber(anecdotes.length));
+  const [votes, setVotes] = useState(generateVotesObject());
 
-  const handleClick = () => {
+  const handleNextClick = () => {
     let newSelected = getRandomNumber(anecdotes.length);
+    // prevent selecting the same anecdote twice in a row
     while (newSelected === selected) newSelected = getRandomNumber(anecdotes.length);
-    setSelected(() => newSelected);
+    setSelected((_) => newSelected);
+  };
+
+  const handleVoteClick = () => {
+    setVotes((votes) => ({ ...votes, [selected]: votes[selected] + 1 }));
   };
 
   return (
     <div>
       <p>{anecdotes[selected]}</p>
-      <button onClick={handleClick}>Next anecdote</button>
+      <p>Has {votes[selected]} votes</p>
+      <button onClick={handleVoteClick}>Vote</button>
+      <button onClick={handleNextClick}>Next anecdote</button>
     </div>
   )
 }
