@@ -3,8 +3,8 @@ const Course = ({ course: { name, parts } }) => {
     <div>
       <Header courseName={name}/>
       <Content parts={parts}/>
-      <hr />
       <Total parts={parts}/>
+      <hr />
     </div>
   );
 };
