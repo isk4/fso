@@ -8,19 +8,17 @@ const NewContactForm = ({ contacts, setContacts }) => {
   const handleNameInputChange = (e) => setNameInput(e.target.value);
   const handleNumberInputChange = (e) => setNumberInput(e.target.value);
 
-  const handleAddContact = (e) => {
+  const handleAddContact = async (e) => {
     e.preventDefault();
     if (isAlreadyAdded(nameInput)) {
       alert(`"${nameInput}" is already added to phonebook`);
-      
     } else {
-      const newContact = { name: nameInput, number: numberInput };
-      
-      const createdContact = contactsService.create(newContact);
-      setContacts(contacts.concat(createdContact));
-
       setNameInput('');
       setNumberInput('');
+      
+      const newContact = { name: nameInput, number: numberInput };
+      const createdContact = await contactsService.create(newContact);
+      setContacts(contacts.concat(createdContact));
     }
   };
 
