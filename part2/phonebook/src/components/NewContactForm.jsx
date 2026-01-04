@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import axios from 'axios';
 
 const NewContactForm = ({ contacts, setContacts }) => {
   const [nameInput, setNameInput] = useState('');
@@ -6,14 +7,24 @@ const NewContactForm = ({ contacts, setContacts }) => {
 
   const handleNameInputChange = (e) => setNameInput(e.target.value);
   const handleNumberInputChange = (e) => setNumberInput(e.target.value);
+
+  const sendContact = async (contact) =>  {
+    const response = await axios.get('http://localhost:3001/contacts');
+    console.log(response.data);
+  };
   
   const handleAddContact = (e) => {
     e.preventDefault();
     if (isAlreadyAdded(nameInput)) {
+      
       alert(`"${nameInput}" is already added to phonebook`);
+      
     } else {
       const newContact = { name: nameInput, number: numberInput };
+      
+      sendContact(newContact);
       setContacts(contacts.concat(newContact));
+
       setNameInput('');
       setNumberInput('');
     }

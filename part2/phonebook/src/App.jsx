@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import NewContactForm from './components/NewContactForm';
 import ContactList from './components/ContactList';
+import axios from 'axios';
 
 const initialContactList = [
   { name: 'Arto Hellas', number: '040-123456' },
@@ -12,7 +13,15 @@ const initialContactList = [
 ];
 
 const App = () => {
-  const [contacts, setContacts] = useState(initialContactList);
+  const [contacts, setContacts] = useState([]);
+  useEffect(() => {
+    updateContacts();
+  }, []);
+  
+  const updateContacts = async () => {
+    const response = await axios.get('http://localhost:3001/contacts/');
+    setContacts(response.data);
+  };
 
   return (
     <div>
