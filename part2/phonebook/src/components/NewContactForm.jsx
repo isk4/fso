@@ -9,7 +9,7 @@ const NewContactForm = ({ contacts, setContacts }) => {
   const handleNumberInputChange = (e) => setNumberInput(e.target.value);
 
   const sendContact = async (contact) =>  {
-    const response = await axios.get('http://localhost:3001/contacts');
+    const response = await axios.post('http://localhost:3001/contacts', contact);
     console.log(response.data);
   };
   
