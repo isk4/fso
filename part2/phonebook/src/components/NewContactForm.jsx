@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import contactsService from '../services/contacts';
 
-const NewContactForm = ({ contacts, setContacts }) => {
+const NewContactForm = ({ setContacts, findContact }) => {
   const [nameInput, setNameInput] = useState('');
   const [numberInput, setNumberInput] = useState('');
 
@@ -10,21 +10,26 @@ const NewContactForm = ({ contacts, setContacts }) => {
 
   const handleAddContact = async (e) => {
     e.preventDefault();
-    if (isAlreadyAdded(nameInput)) {
-      alert(`"${nameInput}" is already added to phonebook`);
+    setNameInput('');
+    setNumberInput('');
+    const foundContact = findContact(nameInput);
+
+    if (foundContact) {
+      if (window.confirm(`"${nameInput}" is already added to phonebook. Replace the old number with the a one?`)) {
+        const updatedContact = await contactsService.update(foundContact.id, {...foundContact, number: numberInput});
+        
+        setContacts((contacts) => {
+          return contacts.map((contact) => contact.id === updatedContact.id ? updatedContact : contact);
+        });
+      }
     } else {
-      setNameInput('');
-      setNumberInput('');
-      
       const newContact = { name: nameInput, number: numberInput };
       const createdContact = await contactsService.create(newContact);
-      setContacts(contacts.concat(createdContact));
+      
+      setContacts((contacts) => contacts.concat(createdContact));
     }
   };
 
-  const isAlreadyAdded = (name) => {
-    return contacts.find((person) => person.name === name);
-  };
 
   return (
     <form>

@@ -10,13 +10,14 @@ const App = () => {
   }, []);
   
   const updateContacts = async () => setContacts(await contactsService.getAll());
+  const findContact = (name) => contacts.find((contact) => contact.name === name);
 
   return (
     <div>
       <h1>Phonebook</h1>
       <div>
         <h2>Add new contact</h2>
-        <NewContactForm contacts={contacts} setContacts={setContacts} />
+        <NewContactForm contacts={contacts} setContacts={setContacts} findContact={findContact} updateContacts={updateContacts} />
       </div>
       <div>
         <h2>Contacts</h2>

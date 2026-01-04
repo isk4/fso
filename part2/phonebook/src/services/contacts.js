@@ -11,13 +11,19 @@ const create = async (contact) => {
   return response.data;
 };
 
-const remove = async (contact) => {
-  const response = await axios.delete(`${baseUrl}/${contact.id}`);
+const remove = async (contactId) => {
+  const response = await axios.delete(`${baseUrl}/${contactId}`);
+  return response.data;
+};
+
+const update = async (contactId, newContact) => {
+  const response = await axios.put(`${baseUrl}/${contactId}`, newContact);
   return response.data;
 };
 
 export default {
   getAll,
   create,
-  remove
+  remove,
+  update
 };
