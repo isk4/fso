@@ -18,12 +18,13 @@ This repo organizes the exercises by part, with frontend and backend projects.
 ```
 .
 ├── part0/
-├── ...
+├── part1/
+├── part2/
 ```
 
 ### Progress
-- [ ] Part 0 — Fundamentals of Web apps
-- [ ] Part 1 — Introduction to React
+- [x] Part 0 — Fundamentals of Web apps
+- [x] Part 1 — Introduction to React
 - [ ] Part 2 — Communicating with server
 - [ ] Part 3 — Programming a server with NodeJS and Express
 - [ ] Part 4 — Testing Express servers, user administration
