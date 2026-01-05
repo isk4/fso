@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import contactsService from '../services/contacts';
 
-const NewContactForm = ({ setContacts, findContact }) => {
+const NewContactForm = ({ setContacts, findContact, showNotification }) => {
   const [nameInput, setNameInput] = useState('');
   const [numberInput, setNumberInput] = useState('');
 
@@ -21,12 +21,14 @@ const NewContactForm = ({ setContacts, findContact }) => {
         setContacts((contacts) => {
           return contacts.map((contact) => contact.id === updatedContact.id ? updatedContact : contact);
         });
+        showNotification("Contact updated succesfully");
       }
     } else {
       const newContact = { name: nameInput, number: numberInput };
       const createdContact = await contactsService.create(newContact);
       
       setContacts((contacts) => contacts.concat(createdContact));
+      showNotification("Contact created succesfully");
     }
   };
 

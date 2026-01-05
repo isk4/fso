@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import contactsService from '../services/contacts';
 
-const ContactList = ({ contacts, setContacts }) => {
+const ContactList = ({ contacts, setContacts, showNotification }) => {
   const [search, setSearch] = useState('');
 
   const startsWith = (str1, str2) => str1.toUpperCase().startsWith(str2.toUpperCase());
@@ -12,8 +12,9 @@ const ContactList = ({ contacts, setContacts }) => {
 
   const handleDelete = (contact) => {
     if (window.confirm(`Delete "${contact.name}?"`)) {
-      contactsService.remove(contact);
+      contactsService.remove(contact.id);
       setContacts(contacts.filter((c) => c.id !== contact.id));
+      showNotification("Contact deleted succesfully");
     }
   };
   

@@ -1,26 +1,38 @@
 import { useState, useEffect } from 'react';
-import { NewContactForm, ContactList } from './components/';
+import { NewContactForm, ContactList, Notification } from './components/';
 import contactsService from './services/contacts';
 
 const App = () => {
   const [contacts, setContacts] = useState([]);
-  useEffect(() => {
-    updateContacts();
-  }, []);
+  const [notification, setNotification] = useState(null);
+
+  useEffect(() => { updateContacts() }, []);
   
   const updateContacts = async () => setContacts(await contactsService.getAll());
   const findContact = (name) => contacts.find((contact) => contact.name === name);
+  const showNotification = (message) => {
+    setNotification(message);
+    setTimeout(() => setNotification(null), 5000);
+  };
 
   return (
     <div>
+      { notification && <Notification message={notification} /> }
       <h1>Phonebook</h1>
       <div>
         <h2>Add new contact</h2>
-        <NewContactForm contacts={contacts} setContacts={setContacts} findContact={findContact} updateContacts={updateContacts} />
+        <NewContactForm 
+          contacts={contacts} 
+          setContacts={setContacts} 
+          findContact={findContact}
+          showNotification={showNotification} />
       </div>
       <div>
         <h2>Contacts</h2>
-        <ContactList contacts={contacts} setContacts={setContacts} />
+        <ContactList 
+          contacts={contacts} 
+          setContacts={setContacts}
+          showNotification={showNotification} />
       </div>
     </div>
   );
