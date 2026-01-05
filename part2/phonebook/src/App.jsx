@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import NewContactForm from './components/NewContactForm';
-import ContactList from './components/ContactList';
+import { NewContactForm, ContactList } from './components/';
 import contactsService from './services/contacts';
 
 const App = () => {
