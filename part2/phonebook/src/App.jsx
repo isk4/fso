@@ -10,14 +10,14 @@ const App = () => {
   
   const updateContacts = async () => setContacts(await contactsService.getAll());
   const findContact = (name) => contacts.find((contact) => contact.name === name);
-  const showNotification = (message) => {
-    setNotification(message);
+  const showNotification = (message, type) => {
+    setNotification({message, type});
     setTimeout(() => setNotification(null), 5000);
   };
 
   return (
     <div>
-      { notification && <Notification message={notification} /> }
+      { notification && <Notification notification={notification} /> }
       <h1>Phonebook</h1>
       <div>
         <h2>Add new contact</h2>

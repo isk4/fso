@@ -10,28 +10,32 @@ const NewContactForm = ({ setContacts, findContact, showNotification }) => {
 
   const handleAddContact = async (e) => {
     e.preventDefault();
-    setNameInput('');
-    setNumberInput('');
-    const foundContact = findContact(nameInput);
+    const name = nameInput.trim();
+    const number = numberInput.trim();
+    const foundContact = findContact(name);
 
-    if (foundContact) {
-      if (window.confirm(`"${nameInput}" is already added to phonebook. Replace the old number with the a one?`)) {
-        const updatedContact = await contactsService.update(foundContact.id, {...foundContact, number: numberInput});
+    try {
+      if (foundContact) {
+        const ok = (window.confirm(`"${name}" is already added to phonebook. Replace the old number with a new one?`));
+        if (!ok) return;
         
-        setContacts((contacts) => {
-          return contacts.map((contact) => contact.id === updatedContact.id ? updatedContact : contact);
-        });
-        showNotification("Contact updated succesfully");
+        const updatedContact = await contactsService.update(foundContact.id, {...foundContact, number});
+
+        setContacts((contacts) => contacts.map((contact) => contact.id === updatedContact.id ? updatedContact : contact));
+        showNotification('Contact updated succesfully', 'success');
+      } else {
+        const newContact = { name, number };
+        const createdContact = await contactsService.create(newContact);
+        
+        setContacts((contacts) => contacts.concat(createdContact));
+        showNotification('Contact created succesfully', 'success');
       }
-    } else {
-      const newContact = { name: nameInput, number: numberInput };
-      const createdContact = await contactsService.create(newContact);
-      
-      setContacts((contacts) => contacts.concat(createdContact));
-      showNotification("Contact created succesfully");
+      setNameInput('');
+      setNumberInput('');
+    } catch (e) {
+      showNotification(foundContact ? 'Couldn\'t update contact' : 'Couldn\'t create contact', 'error');
     }
   };
-
 
   return (
     <form>

@@ -10,11 +10,20 @@ const ContactList = ({ contacts, setContacts, showNotification }) => {
 
   const handleSearchChange = (e) => setSearch(e.target.value);
 
-  const handleDelete = (contact) => {
-    if (window.confirm(`Delete "${contact.name}?"`)) {
-      contactsService.remove(contact.id);
-      setContacts(contacts.filter((c) => c.id !== contact.id));
-      showNotification("Contact deleted succesfully");
+  const handleDelete = async (contact) => {
+    if (!window.confirm(`Delete "${contact.name}?"`)) return;
+
+    try {
+      await contactsService.remove(contact.id);
+      setContacts((prevContacts) => prevContacts.filter((c) => c.id !== contact.id));
+      showNotification('Contact deleted successfully', 'success');
+    } catch (e) {
+      if (e.response?.status === 404) {
+        showNotification('Contact not found', 'error');
+        setContacts((prevContacts) => prevContacts.filter((c) => c.id !== contact.id));
+      } else {
+        showNotification('Couldn\'t delete contact', 'error');
+      }
     }
   };
   
