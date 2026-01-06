@@ -56,15 +56,25 @@ app.delete('/api/persons/:id', (request, response) => {
 });
 
 app.post('/api/persons', (request, response) => {
-  const body = request.body;
+  const name = request.body?.name?.trim();
+  const number = request.body?.number?.trim();
+
+  if (!name || !number) {
+    return response.status(400).json({ error: 'name or number missing' });
+  }
+  
+  if (persons.some((p) => p.name.toUpperCase() === name.toUpperCase())) {
+    return response.status(409).json({ error: 'name must be unique' });
+  }
+
   const person = {
     id: generateId(1000),
-    name: body.name,
-    number: body.number
+    name,
+    number
   };
 
   persons.push(person);
-  response.json(person);
+  response.status(201).json(person);
 });
 
 app.get('/info', (request, response) => {
