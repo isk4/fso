@@ -13,15 +13,6 @@ This repo organizes the exercises by part, with frontend and backend projects.
 
 ---
 
-## 🧩 Contents
-
-```
-.
-├── part0/
-├── part1/
-├── part2/
-```
-
 ### Progress
 - [x] Part 0 — Fundamentals of Web apps
 - [x] Part 1 — Introduction to React
