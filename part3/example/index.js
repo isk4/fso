@@ -45,7 +45,7 @@ app.delete('/api/notes/:id', (request, response) => {
 
 const generateId = () => {
   const maxId = notes.reduce((max, note) => Math.max(max, note.id), 0);
-  return maxId + 1;
+  return String(maxId + 1);
 };
 
 app.post('/api/notes', (request, response) => {
