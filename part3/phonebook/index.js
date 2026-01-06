@@ -27,6 +27,16 @@ let persons = [
   }
 ];
 
+const generateId = (upperLimit) => {
+  let id;
+  do {
+    id = Math.floor(Math.random() * upperLimit) + 1;
+    id = String(id);
+  } while (persons.find((p) => p.id === id));
+  
+  return id;
+};
+
 app.get('/api/persons', (request, response) => {
   response.json(persons);
 });
@@ -43,6 +53,18 @@ app.delete('/api/persons/:id', (request, response) => {
   persons = persons.filter((p) => p.id !== id);
 
   response.status(204).end();
+});
+
+app.post('/api/persons', (request, response) => {
+  const body = request.body;
+  const person = {
+    id: generateId(1000),
+    name: body.name,
+    number: body.number
+  };
+
+  persons.push(person);
+  response.json(person);
 });
 
 app.get('/info', (request, response) => {
