@@ -1,3 +1,3 @@
-export { default as NewContactForm } from  './NewContactForm';
-export { default as ContactList } from  './ContactList';
+export { default as NewPersonForm } from  './NewPersonForm';
+export { default as PersonsList } from  './PersonsList';
 export { default as Notification } from  './Notification';
