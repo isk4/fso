@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const PORT = process.env.PORT || 3001;
 const app = express();
 app.use(express.json());
+app.use(express.static('dist'));
 
 morgan.token('body', (request, response) => {
   return request.method === 'POST' ? JSON.stringify(request.body) : '';
