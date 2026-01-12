@@ -1,4 +1,6 @@
 require('dotenv').config();
+require('./mongo');
+
 const express = require('express');
 const morgan = require('morgan');
 const Person = require('./models/person');
@@ -20,7 +22,7 @@ app.get('/api/persons', async (request, response) => {
 });
 
 app.get('/api/persons/:id', async (request, response) => {
-  const person = Person.findById(request.params.id);
+  const person = await Person.findById(request.params.id);
 
   person ? response.json(person) : response.status(404).end();
 });
