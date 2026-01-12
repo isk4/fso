@@ -1,8 +1,11 @@
+require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
+const Person = require('./models/person');
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 const app = express();
+
 app.use(express.json());
 app.use(express.static('dist'));
 
@@ -11,58 +14,25 @@ morgan.token('body', (request, response) => {
 });
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
 
-let persons = [
-  { 
-    "id": "1",
-    "name": "Arto Hellas", 
-    "number": "040-123456"
-  },
-  { 
-    "id": "2",
-    "name": "Ada Lovelace", 
-    "number": "39-44-5323523"
-  },
-  { 
-    "id": "3",
-    "name": "Dan Abramov", 
-    "number": "12-43-234345"
-  },
-  { 
-    "id": "4",
-    "name": "Mary Poppendieck", 
-    "number": "39-23-6423122"
-  }
-];
-
-const generateId = (upperLimit) => {
-  let id;
-  do {
-    id = Math.floor(Math.random() * upperLimit) + 1;
-    id = String(id);
-  } while (persons.find((p) => p.id === id));
-  
-  return id;
-};
-
-app.get('/api/persons', (request, response) => {
+app.get('/api/persons', async (request, response) => {
+  const persons = await Person.find({});
   response.json(persons);
 });
 
-app.get('/api/persons/:id', (request, response) => {
-  const id = request.params.id;
-  const person = persons.find((p) => p.id === id);
+app.get('/api/persons/:id', async (request, response) => {
+  const person = Person.findById(request.params.id);
 
   person ? response.json(person) : response.status(404).end();
 });
 
-app.delete('/api/persons/:id', (request, response) => {
-  const id = request.params.id;
-  persons = persons.filter((p) => p.id !== id);
+// app.delete('/api/persons/:id', (request, response) => {
+//   const id = request.params.id;
+//   persons = persons.filter((p) => p.id !== id);
 
-  response.status(204).end();
-});
+//   response.status(204).end();
+// });
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', async (request, response) => {
   const name = request.body?.name?.trim();
   const number = request.body?.number?.trim();
 
@@ -70,21 +40,19 @@ app.post('/api/persons', (request, response) => {
     return response.status(400).json({ error: 'name or number missing' });
   }
   
-  if (persons.some((p) => p.name.toUpperCase() === name.toUpperCase())) {
-    return response.status(409).json({ error: 'name must be unique' });
-  }
+  // if (persons.some((p) => p.name.toUpperCase() === name.toUpperCase())) {
+  //   return response.status(409).json({ error: 'name must be unique' });
+  // }
 
-  const person = {
-    id: generateId(1000),
-    name,
-    number
-  };
+  const person = new Person({ name, number });
 
-  persons.push(person);
-  response.status(201).json(person);
+  const savedPerson = await person.save();
+  response.json(savedPerson);
 });
 
-app.get('/info', (request, response) => {
+app.get('/info', async (request, response) => {
+  const persons = await Person.find({});
+
   response.send(`
     <p>Phonebook has info for ${persons.length} ${persons.length === 1 ? 'person' : 'people'}</p>
     <p>${new Date()}</p>
