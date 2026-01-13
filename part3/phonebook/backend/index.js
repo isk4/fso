@@ -27,12 +27,11 @@ app.get('/api/persons/:id', async (request, response) => {
   person ? response.json(person) : response.status(404).end();
 });
 
-// app.delete('/api/persons/:id', (request, response) => {
-//   const id = request.params.id;
-//   persons = persons.filter((p) => p.id !== id);
+app.delete('/api/persons/:id', async (request, response) => {
+  await Person.findByIdAndDelete(request.params.id);
 
-//   response.status(204).end();
-// });
+  response.status(204).end();
+});
 
 app.post('/api/persons', async (request, response) => {
   const name = request.body?.name?.trim();
