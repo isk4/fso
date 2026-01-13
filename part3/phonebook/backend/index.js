@@ -60,6 +60,24 @@ app.get('/info', async (request, response) => {
   `);
 });
 
+const unknownEndpointHandler = (request, response) => {
+  response.status(404).end();
+};
+
+app.use(unknownEndpointHandler);
+
+const castErrorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' });
+  }
+
+  next(error);
+};
+
+app.use(castErrorHandler);
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
