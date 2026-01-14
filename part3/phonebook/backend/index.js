@@ -40,10 +40,6 @@ app.post('/api/persons', async (request, response) => {
   if (!name || !number) {
     return response.status(400).json({ error: 'name or number missing' });
   }
-  
-  // if (persons.some((p) => p.name.toUpperCase() === name.toUpperCase())) {
-  //   return response.status(409).json({ error: 'name must be unique' });
-  // }
 
   const person = new Person({ name, number });
 
