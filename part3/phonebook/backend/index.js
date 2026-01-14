@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(express.static('dist'));
 
 morgan.token('body', (request, response) => {
-  return request.method === 'POST' ? JSON.stringify(request.body) : '';
+  return ['POST', 'PUT'].some((method) => method === request.method) ? JSON.stringify(request.body) : '';
 });
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
 
@@ -49,6 +49,24 @@ app.post('/api/persons', async (request, response) => {
 
   const savedPerson = await person.save();
   response.json(savedPerson);
+});
+
+app.put('/api/persons/:id', async (request, response) => {
+  const person = await Person.findById(request.params.id);
+  const number = request.body?.number?.trim();
+
+  if (!person) {
+    return response.status(404).end();
+  } 
+
+  if (!number) {
+    return response.status(400).json({ error: 'number missing'});
+  }
+
+  person.number = number;
+  const updatedPerson = await person.save();
+
+  response.json(updatedPerson);
 });
 
 app.get('/info', async (request, response) => {

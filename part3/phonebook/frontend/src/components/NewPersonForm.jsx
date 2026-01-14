@@ -7,6 +7,7 @@ const NewPersonForm = ({ setPersons, findPerson, showNotification }) => {
 
   const handleNameInputChange = (e) => setNameInput(e.target.value);
   const handleNumberInputChange = (e) => setNumberInput(e.target.value);
+  const findPerson = (name) => persons.find((person) => person.name.toUpperCase() === name.toUpperCase());
 
   const handleAddPerson = async (e) => {
     e.preventDefault();

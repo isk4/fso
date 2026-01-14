@@ -9,7 +9,6 @@ const App = () => {
   useEffect(() => { updatePersons() }, []);
   
   const updatePersons = async () => setPersons(await personsService.getAll());
-  const findPerson = (name) => persons.find((person) => person.name === name);
   const showNotification = (message, type) => {
     setNotification({message, type});
     setTimeout(() => setNotification(null), 5000);
@@ -24,7 +23,6 @@ const App = () => {
         <NewPersonForm 
           persons={persons} 
           setPersons={setPersons} 
-          findPerson={findPerson}
           showNotification={showNotification} />
       </div>
       <div>

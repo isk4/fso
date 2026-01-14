@@ -16,8 +16,8 @@ const remove = async (personId) => {
   return response.data;
 };
 
-const update = async (personId, newPerson) => {
-  const response = await axios.put(`${baseUrl}/${personId}`, newPerson);
+const update = async (personId, person) => {
+  const response = await axios.put(`${baseUrl}/${personId}`, person);
   return response.data;
 };
 
