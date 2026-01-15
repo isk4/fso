@@ -31,7 +31,7 @@ const NewPersonForm = ({ setPersons, findPerson, showNotification }) => {
       setNameInput('');
       setNumberInput('');
     } catch (e) {
-      showNotification(`Couldn\'t ${action} phonebook entry. ${e.response?.data?.error}`, 'error');
+      showNotification(`Couldn't ${action} phonebook entry. ${e.response?.data?.error}`, 'error');
     }
   };
 

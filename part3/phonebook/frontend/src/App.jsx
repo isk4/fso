@@ -6,9 +6,12 @@ const App = () => {
   const [persons, setPersons] = useState([]);
   const [notification, setNotification] = useState(null);
 
-  useEffect(() => { updatePersons() }, []);
+  useEffect(() => {
+    (async () => {
+      setPersons(await personsService.getAll());
+    })();
+  }, []);
   
-  const updatePersons = async () => setPersons(await personsService.getAll());
   const findPerson = (name) => persons.find((person) => person.name.toUpperCase() === name.toUpperCase());
   const showNotification = (message, type) => {
     setNotification({message, type});
