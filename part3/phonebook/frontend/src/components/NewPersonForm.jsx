@@ -7,7 +7,6 @@ const NewPersonForm = ({ setPersons, findPerson, showNotification }) => {
 
   const handleNameInputChange = (e) => setNameInput(e.target.value);
   const handleNumberInputChange = (e) => setNumberInput(e.target.value);
-  const findPerson = (name) => persons.find((person) => person.name.toUpperCase() === name.toUpperCase());
 
   const handleAddPerson = async (e) => {
     e.preventDefault();
@@ -32,7 +31,7 @@ const NewPersonForm = ({ setPersons, findPerson, showNotification }) => {
       setNameInput('');
       setNumberInput('');
     } catch (e) {
-      showNotification(`Couldn\'t ${action} phonebook entry`, 'error');
+      showNotification(`Couldn\'t ${action} phonebook entry. ${e.response?.data?.error}`, 'error');
     }
   };
 

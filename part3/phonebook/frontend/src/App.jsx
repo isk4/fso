@@ -9,6 +9,7 @@ const App = () => {
   useEffect(() => { updatePersons() }, []);
   
   const updatePersons = async () => setPersons(await personsService.getAll());
+  const findPerson = (name) => persons.find((person) => person.name.toUpperCase() === name.toUpperCase());
   const showNotification = (message, type) => {
     setNotification({message, type});
     setTimeout(() => setNotification(null), 5000);
@@ -22,7 +23,8 @@ const App = () => {
         <h2>Add new entry</h2>
         <NewPersonForm 
           persons={persons} 
-          setPersons={setPersons} 
+          setPersons={setPersons}
+          findPerson={findPerson}
           showNotification={showNotification} />
       </div>
       <div>
