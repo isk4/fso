@@ -11,12 +11,12 @@ const app = express();
 app.use(express.json());
 app.use(express.static('dist'));
 
-morgan.token('body', (request, response) => {
+morgan.token('body', (request, _response) => {
   return ['POST', 'PUT'].some((method) => method === request.method) ? JSON.stringify(request.body) : '';
 });
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
 
-app.get('/api/persons', async (request, response) => {
+app.get('/api/persons', async (_request, response) => {
   const persons = await Person.find({});
   response.json(persons);
 });
@@ -53,10 +53,10 @@ app.put('/api/persons/:id', async (request, response) => {
 
   if (!person) {
     return response.status(404).end();
-  } 
+  }
 
   if (!number) {
-    return response.status(400).json({ error: 'number missing'});
+    return response.status(400).json({ error: 'number missing' });
   }
 
   person.number = number;
@@ -65,7 +65,7 @@ app.put('/api/persons/:id', async (request, response) => {
   response.json(updatedPerson);
 });
 
-app.get('/info', async (request, response) => {
+app.get('/info', async (_request, response) => {
   const persons = await Person.find({});
 
   response.send(`
@@ -80,13 +80,13 @@ const unknownEndpointHandler = (request, response) => {
 
 app.use(unknownEndpointHandler);
 
-const castErrorHandler = (error, request, response, next) => {
+const castErrorHandler = (error, _request, response, next) => {
   console.error(error.message);
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' });
   } else if (error.name === 'ValidationError') {
-    return response.status(400).json({ error: error.message })
+    return response.status(400).json({ error: error.message });
   }
 
   next(error);
