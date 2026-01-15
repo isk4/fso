@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const personSchema = new mongoose.Schema({
   name: {
     type: String,
-    minLength: 3
+    minLength: 3,
+    required: [true, 'name missing']
   },
   number: {
     type: String,
@@ -14,7 +15,7 @@ const personSchema = new mongoose.Schema({
       message: () => 'format should be XX-XXXXXX... or XXX-XXXXX... (8+ digits)',
       required: [true, 'number missing']
     }
-  },
+  }
 });
 
 personSchema.set('toJSON', {
