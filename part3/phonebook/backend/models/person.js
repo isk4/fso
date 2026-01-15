@@ -5,7 +5,16 @@ const personSchema = new mongoose.Schema({
     type: String,
     minLength: 3
   },
-  number: String,
+  number: {
+    type: String,
+    validate: {
+      validator: (number) => {
+        return /^(?=.{9,}$)\d{2,3}-\d+$/.test(number);
+      },
+      message: () => 'format should be XX-XXXXXX... or XXX-XXXXX... (8+ digits)',
+      required: [true, 'number missing']
+    }
+  },
 });
 
 personSchema.set('toJSON', {
