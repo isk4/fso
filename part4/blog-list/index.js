@@ -1,13 +1,12 @@
-require('dotenv').config();
 require('./mongo');
-
 const express = require('express');
+
+const config = require('./utils/config');
 const logger = require('./utils/logger');
 const { requestLogger } = require('./utils/middleware');
 
 const Blog = require('./models/blog');
 
-const PORT = process.env.PORT;
 const app = express();
 
 app.use(express.json());
@@ -47,6 +46,6 @@ const castErrorHandler = (error, _request, response, next) => {
 
 app.use(castErrorHandler);
 
-app.listen(PORT, () => {
-  logger.info(`Server running on port ${PORT}\n`);
+app.listen(config.PORT, () => {
+  logger.info(`Server running on port ${config.PORT}\n`);
 });
