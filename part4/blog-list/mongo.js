@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const logger = require('./utils/logger');
 
 mongoose.set('strictQuery',false);
 
@@ -6,10 +7,10 @@ const url = process.env.MONGODB_URI;
 
 (async () => {
   try {
-    console.log('connecting to MongoDB...');
+    logger.info('Connecting to MongoDB...\n');
     await mongoose.connect(url, { family: 4 });
-    console.log('connected to MongoDB');
+    logger.info('Connected to MongoDB\n');
   } catch (e) {
-    console.log('error connecting to MongoDB:', e.message);
+    logger.error('Error connecting to MongoDB:', e.message);
   }
 })();

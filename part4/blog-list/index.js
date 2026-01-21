@@ -2,18 +2,16 @@ require('dotenv').config();
 require('./mongo');
 
 const express = require('express');
-const morgan = require('morgan');
+const logger = require('./utils/logger');
+const { requestLogger } = require('./utils/middleware');
+
 const Blog = require('./models/blog');
 
 const PORT = process.env.PORT;
 const app = express();
 
 app.use(express.json());
-
-morgan.token('body', (request, _response) => {
-  return ['POST', 'PUT'].some((method) => method === request.method) ? JSON.stringify(request.body) : '';
-});
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'));
+app.use(requestLogger);
 
 app.get('/api/blogs', (request, response) => {
   Blog.find({}).then((blogs) => {
@@ -36,7 +34,7 @@ const unknownEndpointHandler = (request, response) => {
 app.use(unknownEndpointHandler);
 
 const castErrorHandler = (error, _request, response, next) => {
-  console.error(error.message);
+  logger.error(error.message);
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' });
@@ -50,5 +48,5 @@ const castErrorHandler = (error, _request, response, next) => {
 app.use(castErrorHandler);
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  logger.info(`Server running on port ${PORT}\n`);
 });
