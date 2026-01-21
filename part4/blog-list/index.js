@@ -3,7 +3,7 @@ const express = require('express');
 
 const config = require('./utils/config');
 const logger = require('./utils/logger');
-const { requestLogger } = require('./utils/middleware');
+const { requestLogger, unknownEndpointHandler, castErrorHandler } = require('./utils/middleware');
 
 const Blog = require('./models/blog');
 
@@ -26,24 +26,7 @@ app.post('/api/blogs', (request, response) => {
   });
 });
 
-const unknownEndpointHandler = (request, response) => {
-  response.status(404).end();
-};
-
 app.use(unknownEndpointHandler);
-
-const castErrorHandler = (error, _request, response, next) => {
-  logger.error(error.message);
-
-  if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id' });
-  } else if (error.name === 'ValidationError') {
-    return response.status(400).json({ error: error.message });
-  }
-
-  next(error);
-};
-
 app.use(castErrorHandler);
 
 app.listen(config.PORT, () => {
