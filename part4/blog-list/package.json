@@ -11,14 +11,13 @@
     "dev": "node --watch index.js",
     "build:ui": "rm -rf dist && cd ../frontend && npm run build && cp -r dist ../backend",
     "deploy:full": "npm run build:ui && git add . && git commit -m 'part4(blog-list): build UI' && git push",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test",
     "lint": "eslint ."
   },
   "dependencies": {
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "mongoose": "^9.1.2",
-    "morgan": "^1.10.1"
+    "mongoose": "^9.1.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
