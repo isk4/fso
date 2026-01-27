@@ -139,3 +139,26 @@ describe('most blogs', () => {
     });
   });
 });
+
+describe('most likes', () => {
+  test('empty list returns null', () => {
+    const result = listHelper.mostLikes([]);
+    assert.deepStrictEqual(result, null);
+  });
+
+  test('list with one blog returns likes of the blog', () => {
+    const result = listHelper.mostLikes(listWithOneBlog);
+    assert.deepStrictEqual(result, {
+      author: 'Edsger W. Dijkstra',
+      likes: 5
+    });
+  });
+
+  test('author with most likes calculated correctly', () => {
+    const result = listHelper.mostLikes(blogs);
+    assert.deepStrictEqual(result, {
+      author: 'Edsger W. Dijkstra',
+      likes: 17
+    });
+  });
+});
