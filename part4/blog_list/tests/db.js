@@ -21,11 +21,3 @@ const clear = async () => {
 };
 
 module.exports = { connect, close, clear };
-
-// Usage:
-
-// const { connect, close, clear } = require('./db')
-
-// beforeAll(async () => { await connect() })
-// afterEach(async () => { await clear() })
-// afterAll(async () => { await close() })
