@@ -1,4 +1,3 @@
-require('./mongo');
 const express = require('express');
 const { requestLogger, unknownEndpointHandler, castErrorHandler } = require('./utils/middleware');
 const blogsRouter = require('./controllers/blogs');
