@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
-const config = require('./utils/config');
-const logger = require('./utils/logger');
+const config = require('./config');
+const logger = require('./logger');
 
 mongoose.set('strictQuery',false);
 
-const connectToMongo = async () => {
+const connectToDB = async () => {
   try {
     logger.info('Connecting to MongoDB...\n');
     await mongoose.connect(config.MONGODB_URI, { family: 4 });
@@ -16,4 +16,4 @@ const connectToMongo = async () => {
   }
 };
 
-module.exports = { connectToMongo };
+module.exports = { connectToDB };
