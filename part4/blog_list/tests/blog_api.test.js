@@ -15,8 +15,24 @@ after(async () => { await close(); });
 
 describe('API', () => {
   test('all blogs are returned as json', async () => {
-    const blogs = await api.get('/api/blogs');
+    const response = await api
+      .get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+    const blogs = response.body;
 
-    assert.strictEqual(blogs.length, blogsFixture.legnth);
+    assert.ok(Array.isArray(blogs));
+    assert.strictEqual(blogs.length, blogsFixture.length);
+  });
+
+  test('blogs unique identifier is named "id", not "_id"', async () => {
+    const response = await api
+      .get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+    const blogs = response.body;
+
+    assert.ok(Array.isArray(blogs));
+    assert.ok(blogs.every((blog) => Object.hasOwn(blog, 'id') && !Object.hasOwn(blog, '_id')));
   });
 });
