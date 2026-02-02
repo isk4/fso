@@ -82,4 +82,46 @@ describe('API', () => {
     assert.ok(Object.hasOwn(createdBlog, 'likes'));
     assert.strictEqual(createdBlog.likes, 0);
   });
+
+  test('POST /api/blogs without title returns bad request', async () => {
+    const newBlog = {
+      author: 'Test Author',
+      url: 'https://www.test.com'
+    };
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+      .expect('Content-Type', /application\/json/);
+
+    const getResponse = await api
+      .get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+    const blogs = getResponse.body;
+
+    assert.strictEqual(blogs.length, blogsFixture.length);
+  });
+
+  test('POST /api/blogs without url returns bad request', async () => {
+    const newBlog = {
+      title: 'Test Blog',
+      author: 'Test Author'
+    };
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+      .expect('Content-Type', /application\/json/);
+
+    const getResponse = await api
+      .get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+    const blogs = getResponse.body;
+
+    assert.strictEqual(blogs.length, blogsFixture.length);
+  });
 });
