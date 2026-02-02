@@ -35,4 +35,33 @@ describe('API', () => {
     assert.ok(Array.isArray(blogs));
     assert.ok(blogs.every((blog) => Object.hasOwn(blog, 'id') && !Object.hasOwn(blog, '_id')));
   });
+
+  test('POST /api/blogs creates new blog correctly', async () => {
+    const newBlog = {
+      title: 'Test Blog',
+      author: 'Test Author',
+      url: 'https://www.test.com'
+    };
+
+    const postResponse = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/);
+    const createdBlog = postResponse.body;
+
+    const getResponse = await api
+      .get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
+    const blogs = getResponse.body;
+
+    assert.strictEqual(blogs.length, blogsFixture.length + 1);
+    assert.ok(blogs.some((blog) =>
+      blog.title === newBlog.title &&
+      blog.author === newBlog.author &&
+      blog.url === newBlog.url &&
+      blog.id === createdBlog.id
+    ));
+  });
 });
