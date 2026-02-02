@@ -13,7 +13,7 @@ beforeEach(async () => await Blog.insertMany(blogsFixture));
 afterEach(async () => { await clear(); });
 after(async () => { await close(); });
 
-describe('API', () => {
+describe('GET /api/blogs', () => {
   test('all blogs are returned as json', async () => {
     const response = await api
       .get('/api/blogs')
@@ -35,8 +35,10 @@ describe('API', () => {
     assert.ok(Array.isArray(blogs));
     assert.ok(blogs.every((blog) => Object.hasOwn(blog, 'id') && !Object.hasOwn(blog, '_id')));
   });
+});
 
-  test('POST /api/blogs creates new blog correctly', async () => {
+describe('POST /api/blogs', () => {
+  test('creates new blog correctly', async () => {
     const newBlog = {
       title: 'Test Blog',
       author: 'Test Author',
@@ -65,7 +67,7 @@ describe('API', () => {
     ));
   });
 
-  test('POST /api/blogs with no likes defaults to 0', async () => {
+  test('blog with no likes defaults to 0 likes', async () => {
     const newBlog = {
       title: 'Test Blog',
       author: 'Test Author',
@@ -83,7 +85,7 @@ describe('API', () => {
     assert.strictEqual(createdBlog.likes, 0);
   });
 
-  test('POST /api/blogs without title returns bad request', async () => {
+  test('blog without title returns bad request', async () => {
     const newBlog = {
       author: 'Test Author',
       url: 'https://www.test.com'
@@ -104,7 +106,7 @@ describe('API', () => {
     assert.strictEqual(blogs.length, blogsFixture.length);
   });
 
-  test('POST /api/blogs without url returns bad request', async () => {
+  test('blog without url returns bad request', async () => {
     const newBlog = {
       title: 'Test Blog',
       author: 'Test Author'
