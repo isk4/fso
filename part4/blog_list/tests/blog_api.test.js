@@ -64,4 +64,22 @@ describe('API', () => {
       blog.id === createdBlog.id
     ));
   });
+
+  test('POST /api/blogs with no likes defaults to 0', async () => {
+    const newBlog = {
+      title: 'Test Blog',
+      author: 'Test Author',
+      url: 'https://www.test.com'
+    };
+
+    const postResponse = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/);
+    const createdBlog = postResponse.body;
+
+    assert.ok(Object.hasOwn(createdBlog, 'likes'));
+    assert.strictEqual(createdBlog.likes, 0);
+  });
 });
