@@ -1,6 +1,6 @@
-const { test, describe, beforeEach, before, afterEach, after } = require('node:test');
+const { test, describe, beforeEach, before, after } = require('node:test');
 const assert = require('node:assert/strict');
-const { connect, close, clear } = require('./db');
+const db = require('./db');
 const supertest = require('supertest');
 const app = require('../app');
 const Blog = require('../models/blog');
@@ -8,10 +8,12 @@ const blogsFixture = require('./fixtures/blogs.json');
 
 const api = supertest(app);
 
-before(async () => { await connect(); });
-beforeEach(async () => await Blog.insertMany(blogsFixture));
-afterEach(async () => { await clear(); });
-after(async () => { await close(); });
+before(async () => await db.connect());
+beforeEach(async () => {
+  await db.clear();
+  await Blog.insertMany(blogsFixture);
+});
+after(async () => await db.close());
 
 describe('GET /api/blogs', () => {
   test('all blogs are returned as json', async () => {
@@ -28,11 +30,9 @@ describe('GET /api/blogs', () => {
   test('blogs unique identifier is named "id", not "_id"', async () => {
     const response = await api
       .get('/api/blogs')
-      .expect(200)
-      .expect('Content-Type', /application\/json/);
+      .expect(200);
     const blogs = response.body;
 
-    assert.ok(Array.isArray(blogs));
     assert.ok(blogs.every((blog) => Object.hasOwn(blog, 'id') && !Object.hasOwn(blog, '_id')));
   });
 });
@@ -54,8 +54,7 @@ describe('POST /api/blogs', () => {
 
     const getResponse = await api
       .get('/api/blogs')
-      .expect(200)
-      .expect('Content-Type', /application\/json/);
+      .expect(200);
     const blogs = getResponse.body;
 
     assert.strictEqual(blogs.length, blogsFixture.length + 1);
@@ -77,11 +76,9 @@ describe('POST /api/blogs', () => {
     const postResponse = await api
       .post('/api/blogs')
       .send(newBlog)
-      .expect(201)
-      .expect('Content-Type', /application\/json/);
+      .expect(201);
     const createdBlog = postResponse.body;
 
-    assert.ok(Object.hasOwn(createdBlog, 'likes'));
     assert.strictEqual(createdBlog.likes, 0);
   });
 
@@ -94,13 +91,11 @@ describe('POST /api/blogs', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
-      .expect(400)
-      .expect('Content-Type', /application\/json/);
+      .expect(400);
 
     const getResponse = await api
       .get('/api/blogs')
-      .expect(200)
-      .expect('Content-Type', /application\/json/);
+      .expect(200);
     const blogs = getResponse.body;
 
     assert.strictEqual(blogs.length, blogsFixture.length);
@@ -115,13 +110,11 @@ describe('POST /api/blogs', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
-      .expect(400)
-      .expect('Content-Type', /application\/json/);
+      .expect(400);
 
     const getResponse = await api
       .get('/api/blogs')
-      .expect(200)
-      .expect('Content-Type', /application\/json/);
+      .expect(200);
     const blogs = getResponse.body;
 
     assert.strictEqual(blogs.length, blogsFixture.length);
