@@ -29,9 +29,7 @@ describe('GET /api/blogs', () => {
   });
 
   test('blogs unique identifier is named "id", not "_id"', async () => {
-    const response = await api
-      .get('/api/blogs')
-      .expect(200);
+    const response = await api.get('/api/blogs').expect(200);
     const blogs = response.body;
 
     assert.ok(blogs.every((blog) => Object.hasOwn(blog, 'id') && !Object.hasOwn(blog, '_id')));
@@ -53,9 +51,7 @@ describe('POST /api/blogs', () => {
       .expect('Content-Type', /application\/json/);
     const createdBlog = postResponse.body;
 
-    const getResponse = await api
-      .get('/api/blogs')
-      .expect(200);
+    const getResponse = await api.get('/api/blogs').expect(200);
     const blogs = getResponse.body;
 
     assert.strictEqual(blogs.length, blogsFixture.length + 1);
@@ -94,9 +90,7 @@ describe('POST /api/blogs', () => {
       .send(newBlog)
       .expect(400);
 
-    const getResponse = await api
-      .get('/api/blogs')
-      .expect(200);
+    const getResponse = await api.get('/api/blogs').expect(200);
     const blogs = getResponse.body;
 
     assert.strictEqual(blogs.length, blogsFixture.length);
@@ -113,9 +107,7 @@ describe('POST /api/blogs', () => {
       .send(newBlog)
       .expect(400);
 
-    const getResponse = await api
-      .get('/api/blogs')
-      .expect(200);
+    const getResponse = await api.get('/api/blogs').expect(200);
     const blogs = getResponse.body;
 
     assert.strictEqual(blogs.length, blogsFixture.length);
