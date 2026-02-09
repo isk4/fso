@@ -145,3 +145,59 @@ describe('DELETE /api/blogs/:id', () => {
     await api.delete(`/api/blogs/${id}`).expect(204);
   });
 });
+
+describe('PATCH /api/blogs/:id', () => {
+  test('updates a blog\'s likes successfully', async () => {
+    const getResponse = await api.get('/api/blogs').expect(200);
+    const blog = getResponse.body[0];
+    const newLikes = { likes: 10 };
+
+    const patchResponse = await api
+      .patch(`/api/blogs/${blog.id}`)
+      .send(newLikes)
+      .expect(200);
+    const updatedBlog = patchResponse.body;
+
+    assert.strictEqual(updatedBlog.likes, newLikes.likes);
+  });
+
+
+  test('request without likes return bad request', async () => {
+    const getResponse = await api.get('/api/blogs').expect(200);
+    const blog = getResponse.body[0];
+
+    const patchResponse = await api
+      .patch(`/api/blogs/${blog.id}`)
+      .send({})
+      .expect(400);
+
+    assert.deepStrictEqual(patchResponse.body, { error: 'likes missing' });
+  });
+
+  test('sending non-numeric likes returns bad request', async () => {
+    const getResponse = await api.get('/api/blogs').expect(200);
+    const blog = getResponse.body[0];
+    const newLikes = { likes: 'abc' };
+
+    const patchResponse = await api
+      .patch(`/api/blogs/${blog.id}`)
+      .send(newLikes)
+      .expect(400);
+
+    assert.deepStrictEqual(patchResponse.body, { error: 'likes must be a number' });
+  });
+
+  test('malformatted id returns bad request', async () => {
+    const response = await api.patch('/api/blogs/123').expect(400);
+
+    assert.deepStrictEqual(response.body, { error: 'malformatted id' });
+  });
+
+  test('non-existing valid id returns 404', async () => {
+    const id = new mongoose.Types.ObjectId().toString();
+    const exists = await Blog.exists({ _id: id });
+    if (exists) throw new Error('Setup error: generated id unexpectedly exists');
+
+    await api.patch(`/api/blogs/${id}`).expect(404);
+  });
+});

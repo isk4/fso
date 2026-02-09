@@ -19,6 +19,28 @@ blogsRouter.post('/blogs', (request, response) => {
   });
 });
 
+blogsRouter.patch('/blogs/:id', async (request, response) => {
+  const blog = await Blog.findById(request.params.id);
+  const likes = request.body?.likes;
+
+  if (!blog) {
+    return response.status(404).end();
+  }
+
+  if (!likes) {
+    return response.status(400).json({ error: 'likes missing' });
+  }
+
+  if (isNaN(likes)) {
+    return response.status(400).json({ error: 'likes must be a number' });
+  }
+
+  blog.likes = likes;
+  const savedBlog = await blog.save();
+  console.log(savedBlog);
+  response.json(savedBlog);
+});
+
 blogsRouter.delete('/blogs/:id', async (request, response) => {
   await Blog.findByIdAndDelete(request.params.id);
 
