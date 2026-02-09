@@ -1,5 +1,6 @@
 const { test, describe, beforeEach, before, after } = require('node:test');
 const assert = require('node:assert/strict');
+const mongoose = require('mongoose');
 const db = require('./db');
 const supertest = require('supertest');
 const app = require('../app');
@@ -118,5 +119,37 @@ describe('POST /api/blogs', () => {
     const blogs = getResponse.body;
 
     assert.strictEqual(blogs.length, blogsFixture.length);
+  });
+});
+
+describe('DELETE /api/blogs/:id', () => {
+  test('deletes blog successfully', async () => {
+    const beforeResponse = await api.get('/api/blogs').expect(200);
+    const beforeBlogs = beforeResponse.body;
+
+    const deleteResponse = await api
+      .delete(`/api/blogs/${beforeBlogs[0].id}`)
+      .expect(204);
+
+    const afterResponse = await api.get('/api/blogs').expect(200);
+    const afterBlogs = afterResponse.body;
+
+    assert.strictEqual(deleteResponse.text, '');
+    assert.strictEqual(afterBlogs.length, beforeBlogs.length - 1);
+    assert.ok(!afterBlogs.some((blog) => blog.id === beforeBlogs[0].id));
+  });
+
+  test('malformatted id returns bad request', async () => {
+    const response = await api.delete('/api/blogs/123').expect(400);
+
+    assert.deepStrictEqual(response.body, { error: 'malformatted id' });
+  });
+
+  test('non-existing valid id returns 204 and does not delete', async () => {
+    const id = new mongoose.Types.ObjectId().toString();
+    const exists = await Blog.exists({ _id: id });
+    if (exists) throw new Error('Setup error: generated id unexpectedly exists');
+
+    await api.delete(`/api/blogs/${id}`).expect(204);
   });
 });
