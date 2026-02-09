@@ -112,6 +112,15 @@ describe('POST /api/blogs', () => {
 
     assert.strictEqual(blogs.length, blogsFixture.length);
   });
+
+  test('request without body returns bad request', async () => {
+    await api.post('/api/blogs').expect(400);
+
+    const getResponse = await api.get('/api/blogs').expect(200);
+    const blogs = getResponse.body;
+
+    assert.strictEqual(blogs.length, blogsFixture.length);
+  });
 });
 
 describe('DELETE /api/blogs/:id', () => {
@@ -161,7 +170,6 @@ describe('PATCH /api/blogs/:id', () => {
     assert.strictEqual(updatedBlog.likes, newLikes.likes);
   });
 
-
   test('request without likes return bad request', async () => {
     const getResponse = await api.get('/api/blogs').expect(200);
     const blog = getResponse.body[0];
@@ -199,5 +207,12 @@ describe('PATCH /api/blogs/:id', () => {
     if (exists) throw new Error('Setup error: generated id unexpectedly exists');
 
     await api.patch(`/api/blogs/${id}`).expect(404);
+  });
+
+  test('request without body returns bad request', async () => {
+    const getResponse = await api.get('/api/blogs').expect(200);
+    const blog = getResponse.body[0];
+
+    await api.patch(`/api/blogs/${blog.id}`).expect(400);
   });
 });
