@@ -33,3 +33,67 @@ describe('GET /api/users', () => {
     assert.ok(Array.isArray(users));
   });
 });
+
+describe('POST /api/users', () => {
+  test('creates user successfully', async () => {
+    const sentUser = {
+      username: 'new_user',
+      name: 'New User',
+      password: 'password'
+    };
+
+    await api
+      .post('/api/users')
+      .send(sentUser)
+      .expect(201)
+      .expect('Content-Type', /application\/json/);
+  });
+
+  test('user without username returns bad request', async () => {
+    const sentUser = {
+      name: 'New User',
+      password: 'password'
+    };
+
+    const response = await api
+      .post('/api/users')
+      .send(sentUser)
+      .expect(400);
+
+    assert.deepStrictEqual(response.body, { error: 'username or password missing' });
+  });
+
+  test('user without password returns bad request', async () => {
+    const sentUser = {
+      username: 'new_user',
+      name: 'New User'
+    };
+
+    const response = await api
+      .post('/api/users')
+      .send(sentUser)
+      .expect(400);
+
+    assert.deepStrictEqual(response.body, { error: 'username or password missing' });
+  });
+
+  test('username must be unique', async () => {
+    const sentUser = {
+      username: 'new_user',
+      name: 'New User',
+      password: 'password'
+    };
+
+    await api
+      .post('/api/users')
+      .send(sentUser)
+      .expect(201);
+
+    const response = await api
+      .post('/api/users')
+      .send(sentUser)
+      .expect(409);
+
+    assert.deepStrictEqual(response.body, { error: 'username already taken' });
+  });
+});
