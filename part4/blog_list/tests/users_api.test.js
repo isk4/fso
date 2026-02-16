@@ -96,4 +96,34 @@ describe('POST /api/users', () => {
 
     assert.deepStrictEqual(response.body, { error: 'username already taken' });
   });
+
+  test('username shorter than three characters returns bad request', async () => {
+    const sentUser = {
+      username: '12',
+      name: 'New User',
+      password: 'password'
+    };
+
+    const response = await api
+      .post('/api/users')
+      .send(sentUser)
+      .expect(400);
+
+    assert.deepStrictEqual(response.body, { error: 'username and password must be strings with at least 3 characters' });
+  });
+
+  test('password shorter than three characters returns bad request', async () => {
+    const sentUser = {
+      username: 'new_user',
+      name: 'New User',
+      password: '12'
+    };
+
+    const response = await api
+      .post('/api/users')
+      .send(sentUser)
+      .expect(400);
+
+    assert.deepStrictEqual(response.body, { error: 'username and password must be strings with at least 3 characters' });
+  });
 });
