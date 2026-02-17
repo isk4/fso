@@ -1,0 +1,22 @@
+GET http://localhost:3001/api/blogs
+###
+POST http://localhost:3001/api/blogs
+Content-Type: application/json
+
+{
+  "title": "Blog 1",
+  "author": "User",
+  "url": "https://www.userblog.com",
+  "likes": 1
+}
+###
+GET http://localhost:3001/api/users 
+###
+POST http://localhost:3001/api/users
+Content-Type: application/json
+
+{
+  "username": "new_user",
+  "name": "New User",
+  "password": "password"
+}
