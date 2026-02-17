@@ -5,6 +5,8 @@ const db = require('./db');
 const supertest = require('supertest');
 const app = require('../app');
 const Blog = require('../models/blog');
+const User = require('../models/user');
+const bcrypt = require('bcrypt');
 const blogsFixture = require('./fixtures/blogs.json');
 
 const api = supertest(app);
@@ -12,6 +14,14 @@ const api = supertest(app);
 before(async () => await db.connect());
 beforeEach(async () => {
   await db.clear();
+
+  const user = new User({
+    username: 'test',
+    name: 'Test User',
+    passwordHash: await bcrypt.hash('password', 10)
+  });
+  await user.save();
+
   await Blog.insertMany(blogsFixture);
 });
 after(async () => await db.close());
