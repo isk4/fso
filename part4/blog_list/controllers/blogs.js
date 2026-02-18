@@ -1,6 +1,8 @@
+const { JWT_SECRET } = require('../utils/config');
 const blogsRouter = require('express').Router();
 const Blog = require('../models/blog');
 const User = require('../models/user');
+const jwt = require('jsonwebtoken');
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog
@@ -10,10 +12,15 @@ blogsRouter.get('/', async (request, response) => {
 });
 
 blogsRouter.post('/', async (request, response) => {
-  const user = await User.findOne({});
+  const decodedToken = jwt.verify(request.token, JWT_SECRET);
+  if (!decodedToken.id) {
+    return response.status(401).json({ error: 'invalid token' });
+  }
+
+  const user = await User.findById(decodedToken.id);
 
   if (!user) {
-    return response.status(500).json({ error: 'no users available' });
+    return response.status(400).json({ error: 'invalid user id' });
   }
 
   const blog = new Blog({
@@ -30,7 +37,7 @@ blogsRouter.post('/', async (request, response) => {
   user.blogs.push(savedBlog._id);
   await user.save();
 
-  const populatedBlog = await savedBlog.populate('user', { username: 1, user: 1 });
+  const populatedBlog = await savedBlog.populate('user', { username: 1, name: 1 });
   response.status(201).json(populatedBlog);
 });
 
