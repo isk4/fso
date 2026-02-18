@@ -12,8 +12,9 @@ const blogsFixture = require('./fixtures/blogs.json');
 const api = supertest(app);
 
 // Setup
-let testUser;
-let authToken;
+let userOne; let authTokenOne;
+let _userTwo; let authTokenTwo;
+
 const testBlog = {
   title: 'Test Blog',
   author: 'Test Author',
@@ -23,23 +24,34 @@ const testBlog = {
 before(async () => {
   await db.connect();
 
-  const userResponse = await api
+  const userOneResponse = await api
     .post('/api/users')
     .send({
-      username: 'test_user',
-      name: 'Test User',
+      username: 'user_one',
+      name: 'User One',
+      password: 'password'
+    });
+  userOne = userOneResponse.body;
+
+  const loginResponseOne = await api
+    .post('/api/login')
+    .send({ username: 'user_one', password: 'password' });
+  authTokenOne = loginResponseOne.body.token;
+
+  blogsFixture.forEach((blog) => blog.user = userOne.id);
+
+  await api
+    .post('/api/users')
+    .send({
+      username: 'user_two',
+      name: 'User Two',
       password: 'password'
     });
 
-  testUser = userResponse.body;
-
-  const loginResponse = await api
+  const loginResponseTwo = await api
     .post('/api/login')
-    .send({ username: 'test_user', password: 'password' });
-
-  authToken = loginResponse.body.token;
-
-  blogsFixture.forEach((blog) => blog.user = testUser.id);
+    .send({ username: 'user_two', password: 'password' });
+  authTokenTwo = loginResponseTwo.body.token;
 });
 
 beforeEach(async () => {
@@ -74,7 +86,7 @@ describe('POST /api/blogs', () => {
   test('creates new blog correctly', async () => {
     const postResponse = await api
       .post('/api/blogs')
-      .set('Authorization', `Bearer ${authToken}`)
+      .set('Authorization', `Bearer ${authTokenOne}`)
       .send(testBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/);
@@ -90,7 +102,7 @@ describe('POST /api/blogs', () => {
       blog.url === testBlog.url &&
       blog.id === createdBlog.id
     ));
-    assert.strictEqual(createdBlog.user.id, testUser.id);
+    assert.strictEqual(createdBlog.user.id, userOne.id);
   });
 
   test('fails without authentication', async () => {
@@ -99,7 +111,7 @@ describe('POST /api/blogs', () => {
       .send(testBlog)
       .expect(401);
 
-    assert.deepStrictEqual(response.body, { error: 'invalid token' });
+    assert.deepStrictEqual(response.body, { error: 'token missing' });
   });
 
   test('fails with invalid user', async () => {
@@ -120,7 +132,7 @@ describe('POST /api/blogs', () => {
       .send(testBlog)
       .expect(401);
 
-    assert.deepStrictEqual(postResponse.body, { error: 'invalid user id' });
+    assert.deepStrictEqual(postResponse.body, { error: 'invalid token' });
   });
 
   test('blog with no likes defaults to 0 likes', async () => {
@@ -128,7 +140,7 @@ describe('POST /api/blogs', () => {
 
     const postResponse = await api
       .post('/api/blogs')
-      .set('Authorization', `Bearer ${authToken}`)
+      .set('Authorization', `Bearer ${authTokenOne}`)
       .send(newBlog)
       .expect(201);
     const createdBlog = postResponse.body;
@@ -141,7 +153,7 @@ describe('POST /api/blogs', () => {
 
     await api
       .post('/api/blogs')
-      .set('Authorization', `Bearer ${authToken}`)
+      .set('Authorization', `Bearer ${authTokenOne}`)
       .send(newBlog)
       .expect(400);
 
@@ -156,7 +168,7 @@ describe('POST /api/blogs', () => {
 
     await api
       .post('/api/blogs')
-      .set('Authorization', `Bearer ${authToken}`)
+      .set('Authorization', `Bearer ${authTokenOne}`)
       .send(newBlog)
       .expect(400);
 
@@ -169,7 +181,7 @@ describe('POST /api/blogs', () => {
   test('request without body returns bad request', async () => {
     await api
       .post('/api/blogs')
-      .set('Authorization', `Bearer ${authToken}`)
+      .set('Authorization', `Bearer ${authTokenOne}`)
       .expect(400);
 
     const getResponse = await api.get('/api/blogs').expect(200);
@@ -186,7 +198,7 @@ describe('DELETE /api/blogs/:id', () => {
 
     const deleteResponse = await api
       .delete(`/api/blogs/${beforeBlogs[0].id}`)
-      .set('Authorization', `Bearer ${authToken}`)
+      .set('Authorization', `Bearer ${authTokenOne}`)
       .expect(204);
 
     const afterResponse = await api.get('/api/blogs').expect(200);
@@ -212,41 +224,25 @@ describe('DELETE /api/blogs/:id', () => {
   });
 
   test('fails if user is not the owner of the blog', async () => {
-    await api
-      .post('/api/users')
-      .send({
-        username: 'new_user',
-        name: 'New User',
-        password: 'new_password'
-      })
-      .expect(201);
-
-    const loginResponse = await api
-      .post('/api/login')
-      .send({ username: 'new_user', password: 'new_password' })
-      .expect(200);
-
-    const token = loginResponse.body.token;
-
     const beforeResponse = await api.get('/api/blogs').expect(200);
     const beforeBlogs = beforeResponse.body;
 
     const deleteResponse = await api
       .delete(`/api/blogs/${beforeBlogs[0].id}`)
-      .set('Authorization', `Bearer ${token}`)
+      .set('Authorization', `Bearer ${authTokenTwo}`)
       .expect(401);
 
     const afterResponse = await api.get('/api/blogs').expect(200);
     const afterBlogs = afterResponse.body;
 
-    assert.deepStrictEqual(deleteResponse.body, { error: 'invalid user' });
+    assert.deepStrictEqual(deleteResponse.body, { error: 'invalid token' });
     assert.strictEqual(afterBlogs.length, beforeBlogs.length);
   });
 
   test('malformatted id returns bad request', async () => {
     const response = await api
       .delete('/api/blogs/123')
-      .set('Authorization', `Bearer ${authToken}`)
+      .set('Authorization', `Bearer ${authTokenOne}`)
       .expect(400);
 
     assert.deepStrictEqual(response.body, { error: 'malformatted id' });
@@ -259,7 +255,7 @@ describe('DELETE /api/blogs/:id', () => {
 
     await api
       .delete(`/api/blogs/${id}`)
-      .set('Authorization', `Bearer ${authToken}`)
+      .set('Authorization', `Bearer ${authTokenOne}`)
       .expect(204);
   });
 });
@@ -272,11 +268,27 @@ describe('PATCH /api/blogs/:id', () => {
 
     const patchResponse = await api
       .patch(`/api/blogs/${blog.id}`)
+      .set('Authorization', `Bearer ${authTokenOne}`)
       .send(newLikes)
       .expect(200);
     const updatedBlog = patchResponse.body;
 
     assert.strictEqual(updatedBlog.likes, newLikes.likes);
+  });
+
+  test('fails if user is not the owner of the blog', async () => {
+    const getResponse = await api.get('/api/blogs').expect(200);
+    const blog = getResponse.body[0];
+    const newLikes = { likes: 1234 };
+
+    const patchResponse = await api
+      .patch(`/api/blogs/${blog.id}`)
+      .set('Authorization', `Bearer ${authTokenTwo}`)
+      .send(newLikes)
+      .expect(401);
+
+    assert.notStrictEqual(newLikes.likes, blog.likes);
+    assert.deepStrictEqual(patchResponse.body, { error: 'invalid token' });
   });
 
   test('request without likes return bad request', async () => {
@@ -285,6 +297,7 @@ describe('PATCH /api/blogs/:id', () => {
 
     const patchResponse = await api
       .patch(`/api/blogs/${blog.id}`)
+      .set('Authorization', `Bearer ${authTokenOne}`)
       .send({})
       .expect(400);
 
@@ -298,6 +311,7 @@ describe('PATCH /api/blogs/:id', () => {
 
     const patchResponse = await api
       .patch(`/api/blogs/${blog.id}`)
+      .set('Authorization', `Bearer ${authTokenOne}`)
       .send(newLikes)
       .expect(400);
 
@@ -305,7 +319,10 @@ describe('PATCH /api/blogs/:id', () => {
   });
 
   test('malformatted id returns bad request', async () => {
-    const response = await api.patch('/api/blogs/123').expect(400);
+    const response = await api
+      .patch('/api/blogs/123')
+      .set('Authorization', `Bearer ${authTokenOne}`)
+      .expect(400);
 
     assert.deepStrictEqual(response.body, { error: 'malformatted id' });
   });
@@ -315,13 +332,19 @@ describe('PATCH /api/blogs/:id', () => {
     const exists = await Blog.exists({ _id: id });
     if (exists) throw new Error('Setup error: generated id unexpectedly exists');
 
-    await api.patch(`/api/blogs/${id}`).expect(404);
+    await api
+      .patch(`/api/blogs/${id}`)
+      .set('Authorization', `Bearer ${authTokenOne}`)
+      .expect(404);
   });
 
   test('request without body returns bad request', async () => {
     const getResponse = await api.get('/api/blogs').expect(200);
     const blog = getResponse.body[0];
 
-    await api.patch(`/api/blogs/${blog.id}`).expect(400);
+    await api
+      .patch(`/api/blogs/${blog.id}`)
+      .set('Authorization', `Bearer ${authTokenOne}`)
+      .expect(400);
   });
 });
