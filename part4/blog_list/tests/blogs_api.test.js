@@ -5,25 +5,38 @@ const db = require('./db');
 const supertest = require('supertest');
 const app = require('../app');
 const Blog = require('../models/blog');
-const User = require('../models/user');
-const bcrypt = require('bcrypt');
 const blogsFixture = require('./fixtures/blogs.json');
 
 const api = supertest(app);
 
-before(async () => await db.connect());
-beforeEach(async () => {
-  await db.clear();
+let testUser;
+let authToken;
+before(async () => {
+  await db.connect();
 
-  const user = new User({
-    username: 'test',
-    name: 'Test User',
-    passwordHash: await bcrypt.hash('password', 10)
-  });
-  await user.save();
+  const userResponse = await api
+    .post('/api/users')
+    .send({
+      username: 'test_user',
+      name: 'Test User',
+      password: 'password'
+    });
+
+  testUser = userResponse.body;
+
+  const loginResponse = await api
+    .post('/api/login')
+    .send({ username: 'test_user', password: 'password' });
+
+  authToken = loginResponse.body.token;
+});
+
+beforeEach(async () => {
+  await Blog.deleteMany({});
 
   await Blog.insertMany(blogsFixture);
 });
+
 after(async () => await db.close());
 
 describe('GET /api/blogs', () => {
@@ -56,6 +69,7 @@ describe('POST /api/blogs', () => {
 
     const postResponse = await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${authToken}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/);
@@ -71,6 +85,7 @@ describe('POST /api/blogs', () => {
       blog.url === newBlog.url &&
       blog.id === createdBlog.id
     ));
+    assert.strictEqual(createdBlog.user.id, testUser.id);
   });
 
   test('blog with no likes defaults to 0 likes', async () => {
@@ -82,6 +97,7 @@ describe('POST /api/blogs', () => {
 
     const postResponse = await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${authToken}`)
       .send(newBlog)
       .expect(201);
     const createdBlog = postResponse.body;
@@ -97,6 +113,7 @@ describe('POST /api/blogs', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${authToken}`)
       .send(newBlog)
       .expect(400);
 
@@ -114,6 +131,7 @@ describe('POST /api/blogs', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', `Bearer ${authToken}`)
       .send(newBlog)
       .expect(400);
 
@@ -124,7 +142,10 @@ describe('POST /api/blogs', () => {
   });
 
   test('request without body returns bad request', async () => {
-    await api.post('/api/blogs').expect(400);
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${authToken}`)
+      .expect(400);
 
     const getResponse = await api.get('/api/blogs').expect(200);
     const blogs = getResponse.body;
