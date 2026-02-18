@@ -1,8 +1,6 @@
-const { JWT_SECRET } = require('../utils/config');
 const blogsRouter = require('express').Router();
 const Blog = require('../models/blog');
-const User = require('../models/user');
-const jwt = require('jsonwebtoken');
+const { userExtractor } = require('../utils/middleware');
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog
@@ -11,17 +9,10 @@ blogsRouter.get('/', async (request, response) => {
   response.json(blogs);
 });
 
+blogsRouter.use(userExtractor);
+
 blogsRouter.post('/', async (request, response) => {
-  const decodedToken = jwt.verify(request.token, JWT_SECRET);
-  if (!decodedToken.id) {
-    return response.status(401).json({ error: 'invalid token' });
-  }
-
-  const user = await User.findById(decodedToken.id);
-
-  if (!user) {
-    return response.status(401).json({ error: 'invalid user id' });
-  }
+  const user = request.user;
 
   const blog = new Blog({
     ...request.body,
@@ -42,11 +33,16 @@ blogsRouter.post('/', async (request, response) => {
 });
 
 blogsRouter.patch('/:id', async (request, response) => {
+  const user = request.user;
   const blog = await Blog.findById(request.params.id);
   const likes = request.body?.likes;
 
   if (!blog) {
     return response.status(404).end();
+  }
+
+  if (blog.user.toString() !== user._id.toString()) {
+    response.status(401).json({ error: 'invalid token' });
   }
 
   if (!likes) {
@@ -63,17 +59,7 @@ blogsRouter.patch('/:id', async (request, response) => {
 });
 
 blogsRouter.delete('/:id', async (request, response) => {
-  const decodedToken = jwt.verify(request.token, JWT_SECRET);
-  if (!decodedToken.id) {
-    return response.status(401).json({ error: 'invalid token' });
-  }
-
-  const user = await User.findById(decodedToken.id);
-
-  if (!user) {
-    return response.status(401).json({ error: 'invalid user id' });
-  }
-
+  const user = request.user;
   const blog = await Blog.findById(request.params.id);
 
   if (!blog) {
@@ -84,7 +70,7 @@ blogsRouter.delete('/:id', async (request, response) => {
     await blog.deleteOne();
     response.status(204).end();
   } else {
-    response.status(401).json({ error: 'invalid user' });
+    response.status(401).json({ error: 'invalid token' });
   }
 });
 
