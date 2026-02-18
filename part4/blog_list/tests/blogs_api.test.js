@@ -9,8 +9,16 @@ const blogsFixture = require('./fixtures/blogs.json');
 
 const api = supertest(app);
 
+// Setup
+
 let testUser;
 let authToken;
+const testBlog = {
+  title: 'Test Blog',
+  author: 'Test Author',
+  url: 'https://www.test.com'
+};
+
 before(async () => {
   await db.connect();
 
@@ -39,6 +47,8 @@ beforeEach(async () => {
 
 after(async () => await db.close());
 
+// Tests
+
 describe('GET /api/blogs', () => {
   test('all blogs are returned as json', async () => {
     const response = await api
@@ -61,16 +71,10 @@ describe('GET /api/blogs', () => {
 
 describe('POST /api/blogs', () => {
   test('creates new blog correctly', async () => {
-    const newBlog = {
-      title: 'Test Blog',
-      author: 'Test Author',
-      url: 'https://www.test.com'
-    };
-
     const postResponse = await api
       .post('/api/blogs')
       .set('Authorization', `Bearer ${authToken}`)
-      .send(newBlog)
+      .send(testBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/);
     const createdBlog = postResponse.body;
@@ -80,20 +84,16 @@ describe('POST /api/blogs', () => {
 
     assert.strictEqual(blogs.length, blogsFixture.length + 1);
     assert.ok(blogs.some((blog) =>
-      blog.title === newBlog.title &&
-      blog.author === newBlog.author &&
-      blog.url === newBlog.url &&
+      blog.title === testBlog.title &&
+      blog.author === testBlog.author &&
+      blog.url === testBlog.url &&
       blog.id === createdBlog.id
     ));
     assert.strictEqual(createdBlog.user.id, testUser.id);
   });
 
   test('blog with no likes defaults to 0 likes', async () => {
-    const newBlog = {
-      title: 'Test Blog',
-      author: 'Test Author',
-      url: 'https://www.test.com'
-    };
+    const newBlog = { ...testBlog, likes: undefined };
 
     const postResponse = await api
       .post('/api/blogs')
@@ -106,10 +106,7 @@ describe('POST /api/blogs', () => {
   });
 
   test('blog without title returns bad request', async () => {
-    const newBlog = {
-      author: 'Test Author',
-      url: 'https://www.test.com'
-    };
+    const newBlog = { ...testBlog, title: undefined };
 
     await api
       .post('/api/blogs')
@@ -124,10 +121,7 @@ describe('POST /api/blogs', () => {
   });
 
   test('blog without url returns bad request', async () => {
-    const newBlog = {
-      title: 'Test Blog',
-      author: 'Test Author'
-    };
+    const newBlog = { ...testBlog, url: undefined };
 
     await api
       .post('/api/blogs')
