@@ -12,7 +12,6 @@ const blogsFixture = require('./fixtures/blogs.json');
 const api = supertest(app);
 
 // Setup
-
 let testUser;
 let authToken;
 const testBlog = {
@@ -39,18 +38,18 @@ before(async () => {
     .send({ username: 'test_user', password: 'password' });
 
   authToken = loginResponse.body.token;
+
+  blogsFixture.forEach((blog) => blog.user = testUser.id);
 });
 
 beforeEach(async () => {
   await Blog.deleteMany({});
-
   await Blog.insertMany(blogsFixture);
 });
 
 after(async () => await db.close());
 
 // Tests
-
 describe('GET /api/blogs', () => {
   test('all blogs are returned as json', async () => {
     const response = await api
@@ -187,6 +186,7 @@ describe('DELETE /api/blogs/:id', () => {
 
     const deleteResponse = await api
       .delete(`/api/blogs/${beforeBlogs[0].id}`)
+      .set('Authorization', `Bearer ${authToken}`)
       .expect(204);
 
     const afterResponse = await api.get('/api/blogs').expect(200);
@@ -197,8 +197,57 @@ describe('DELETE /api/blogs/:id', () => {
     assert.ok(!afterBlogs.some((blog) => blog.id === beforeBlogs[0].id));
   });
 
+  test('fails without authentication', async () => {
+    const beforeResponse = await api.get('/api/blogs').expect(200);
+    const beforeBlogs = beforeResponse.body;
+
+    await api
+      .delete(`/api/blogs/${beforeBlogs[0].id}`)
+      .expect(401);
+
+    const afterResponse = await api.get('/api/blogs').expect(200);
+    const afterBlogs = afterResponse.body;
+
+    assert.strictEqual(afterBlogs.length, beforeBlogs.length);
+  });
+
+  test('fails if user is not the owner of the blog', async () => {
+    await api
+      .post('/api/users')
+      .send({
+        username: 'new_user',
+        name: 'New User',
+        password: 'new_password'
+      })
+      .expect(201);
+
+    const loginResponse = await api
+      .post('/api/login')
+      .send({ username: 'new_user', password: 'new_password' })
+      .expect(200);
+
+    const token = loginResponse.body.token;
+
+    const beforeResponse = await api.get('/api/blogs').expect(200);
+    const beforeBlogs = beforeResponse.body;
+
+    const deleteResponse = await api
+      .delete(`/api/blogs/${beforeBlogs[0].id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(401);
+
+    const afterResponse = await api.get('/api/blogs').expect(200);
+    const afterBlogs = afterResponse.body;
+
+    assert.deepStrictEqual(deleteResponse.body, { error: 'invalid user' });
+    assert.strictEqual(afterBlogs.length, beforeBlogs.length);
+  });
+
   test('malformatted id returns bad request', async () => {
-    const response = await api.delete('/api/blogs/123').expect(400);
+    const response = await api
+      .delete('/api/blogs/123')
+      .set('Authorization', `Bearer ${authToken}`)
+      .expect(400);
 
     assert.deepStrictEqual(response.body, { error: 'malformatted id' });
   });
@@ -208,7 +257,10 @@ describe('DELETE /api/blogs/:id', () => {
     const exists = await Blog.exists({ _id: id });
     if (exists) throw new Error('Setup error: generated id unexpectedly exists');
 
-    await api.delete(`/api/blogs/${id}`).expect(204);
+    await api
+      .delete(`/api/blogs/${id}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .expect(204);
   });
 });
 

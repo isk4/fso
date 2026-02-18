@@ -63,9 +63,29 @@ blogsRouter.patch('/:id', async (request, response) => {
 });
 
 blogsRouter.delete('/:id', async (request, response) => {
-  await Blog.findByIdAndDelete(request.params.id);
+  const decodedToken = jwt.verify(request.token, JWT_SECRET);
+  if (!decodedToken.id) {
+    return response.status(401).json({ error: 'invalid token' });
+  }
 
-  response.status(204).end();
+  const user = await User.findById(decodedToken.id);
+
+  if (!user) {
+    return response.status(401).json({ error: 'invalid user id' });
+  }
+
+  const blog = await Blog.findById(request.params.id);
+
+  if (!blog) {
+    return response.status(204).end();
+  }
+
+  if (blog.user.toString() === user._id.toString()) {
+    await blog.deleteOne();
+    response.status(204).end();
+  } else {
+    response.status(401).json({ error: 'invalid user' });
+  }
 });
 
 module.exports = blogsRouter;
