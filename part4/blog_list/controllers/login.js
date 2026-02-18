@@ -28,6 +28,7 @@ loginRouter.post('/', async function (request, response) {
     JWT_SECRET,
     { expiresIn: 60*60 }
   );
+
   response
     .status(200)
     .json({ token, username: user.username, name: user.name });

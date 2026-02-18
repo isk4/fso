@@ -2,6 +2,8 @@ const { test, describe, beforeEach, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const mongoose = require('mongoose');
 const db = require('./db');
+const { JWT_SECRET } = require('../utils/config');
+const jwt = require('jsonwebtoken');
 const supertest = require('supertest');
 const app = require('../app');
 const Blog = require('../models/blog');
@@ -90,6 +92,36 @@ describe('POST /api/blogs', () => {
       blog.id === createdBlog.id
     ));
     assert.strictEqual(createdBlog.user.id, testUser.id);
+  });
+
+  test('fails without authentication', async () => {
+    const response = await api
+      .post('/api/blogs')
+      .send(testBlog)
+      .expect(401);
+
+    assert.deepStrictEqual(response.body, { error: 'invalid token' });
+  });
+
+  test('fails with invalid user', async () => {
+    const userForToken = {
+      username: 'test_user',
+      id: new mongoose.Types.ObjectId().toString()
+    };
+
+    const token = jwt.sign(
+      userForToken,
+      JWT_SECRET,
+      { expiresIn: 60*60 }
+    );
+
+    const postResponse = await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
+      .send(testBlog)
+      .expect(401);
+
+    assert.deepStrictEqual(postResponse.body, { error: 'invalid user id' });
   });
 
   test('blog with no likes defaults to 0 likes', async () => {
